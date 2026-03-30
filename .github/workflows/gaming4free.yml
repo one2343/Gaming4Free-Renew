@@ -1,0 +1,74 @@
+name: gaming4free renew (WARP + Buster)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 * * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout private repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/gaming4free-auto
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          path: scripts
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 创建WARP网络
+        uses: fscarmen/warp-on-actions@v1.3
+        with:
+          stack: dual
+          mode: client
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb wget unzip curl jq p7zip-full pulseaudio alsa-utils ffmpeg
+          # 启动虚拟音频（Buster 需要音频回放环境）
+          pulseaudio --start --exit-idle-time=-1 || true
+
+      - name: Install playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Download and Unzip Buster
+        run: |
+          mkdir -p scripts/extensions/buster
+          wget -O scripts/extensions/buster/buster.zip https://github.com/dessant/buster/releases/download/v3.1.0/buster_captcha_solver_for_humans-3.1.0-chrome.zip
+          mkdir -p scripts/extensions/buster/unpacked
+          7z x -y scripts/extensions/buster/buster.zip -oscripts/extensions/buster/unpacked
+
+      - name: Check IP
+        run: |
+          curl -s https://api.ipify.org && echo
+          curl -s https://ipinfo.io
+
+      - name: Run script
+        env:
+          MC_USERNAME: ${{ secrets.MC_USERNAME }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          mkdir -p scripts/screenshots
+          # 使用 xvfb 模拟显示器运行 Node 脚本
+          xvfb-run -a node scripts/renew.js
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: scripts/screenshots/**
