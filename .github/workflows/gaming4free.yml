@@ -78,3 +78,13 @@ jobs:
         with:
           name: screenshots
           path: gaming4free-auto/scripts/screenshots/**
+          retention-days: 1 # 截图构建产物也建议设置极短的保留时间，节省空间
+
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        if: always() # 确保即使前面的脚本运行失败，也会执行清理
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0 # 设置为 0 天，主要依赖下方的保留次数
+          keep_minimum_runs: 3 # 核心设置：始终保留最近 3 次运行记录
