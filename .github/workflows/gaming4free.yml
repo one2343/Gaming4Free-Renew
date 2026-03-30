@@ -18,7 +18,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/gaming4free-auto
           token: ${{ secrets.PRIVATE_REPO_TOKEN }}
-          path: gaming4free-auto # 修改1：将仓库拉取到 gaming4free-auto 文件夹，避免套娃
+          path: gaming4free-auto
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -35,7 +35,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb wget unzip curl jq p7zip-full pulseaudio alsa-utils ffmpeg
-          # 启动虚拟音频（Buster 需要音频回放环境）
           pulseaudio --start --exit-idle-time=-1 || true
 
       - name: Install playwright
@@ -46,7 +45,6 @@ jobs:
 
       - name: Download and Unzip Buster
         run: |
-          # 修改2：对齐插件下载路径，确保和 renew.js 在同一层级的 scripts 目录下
           mkdir -p gaming4free-auto/scripts/extensions/buster
           wget -O gaming4free-auto/scripts/extensions/buster/buster.zip https://github.com/dessant/buster/releases/download/v3.1.0/buster_captcha_solver_for_humans-3.1.0-chrome.zip
           mkdir -p gaming4free-auto/scripts/extensions/buster/unpacked
@@ -63,9 +61,7 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          # 修改3：指向正确的脚本运行路径
           mkdir -p gaming4free-auto/scripts/screenshots
-          # 使用 xvfb 模拟显示器运行 Node 脚本
           xvfb-run -a node gaming4free-auto/scripts/renew.js
 
       - name: Upload screenshots
