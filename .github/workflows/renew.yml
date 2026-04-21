@@ -44,7 +44,7 @@ jobs:
       # =========================
       # 🟡 2️⃣ 启动代理 (GOST) - 增强排错版
       # =========================
-      - name: 🛡️ 启动 GOST 代理转发
+      - name: Start the GOST proxy forwarding
         if: ${{ env.GOST_PROXY != '' }}
         run: |
           VERSION=$(curl -s https://api.github.com/repos/ginuerzh/gost/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | tr -d 'v')
