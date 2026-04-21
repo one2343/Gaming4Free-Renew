@@ -1,4 +1,4 @@
-name: Game4Free Renew
+name: Game4Free-Renew
 
 on:
   workflow_dispatch:
